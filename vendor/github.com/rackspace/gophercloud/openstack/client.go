@@ -24,6 +24,14 @@ const (
 // This is useful if you wish to explicitly control the version of the identity service that's used for authentication explicitly,
 // for example.
 func NewClient(endpoint string) (*gophercloud.ProviderClient, error) {
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+	}
+
+	client := &http.Client{Transport: tr}
+
+
+	
 	u, err := url.Parse(endpoint)
 	if err != nil {
 		return nil, err
@@ -56,6 +64,7 @@ func NewClient(endpoint string) (*gophercloud.ProviderClient, error) {
 					return &gophercloud.ProviderClient{
 						IdentityBase:     base[0 : len(base)-len(version)-1],
 						IdentityEndpoint: endpoint,
+						HTTPClient:       *client,						
 					}, nil
 				default:
 					return nil, fmt.Errorf("Invalid identity endpoint version %v. Supported versions: v2.0, v3", version)
@@ -63,12 +72,6 @@ func NewClient(endpoint string) (*gophercloud.ProviderClient, error) {
 			}
 		}
 	}
-	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-	}
-
-	client := &http.Client{Transport: tr}
-
 	return &gophercloud.ProviderClient{
 		IdentityBase:     base,
 		IdentityEndpoint: "",
