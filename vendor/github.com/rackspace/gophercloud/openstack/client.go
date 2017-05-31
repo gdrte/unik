@@ -1,8 +1,10 @@
 package openstack
 
 import (
+	"crypto/tls"
 	"fmt"
 	"net/url"
+	"net/http"
 	"strconv"
 	"strings"
 
@@ -61,10 +63,16 @@ func NewClient(endpoint string) (*gophercloud.ProviderClient, error) {
 			}
 		}
 	}
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+	}
+
+	client := &http.Client{Transport: tr}
 
 	return &gophercloud.ProviderClient{
 		IdentityBase:     base,
 		IdentityEndpoint: "",
+		HTTPClient:       *client,
 	}, nil
 }
 
